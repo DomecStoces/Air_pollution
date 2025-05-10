@@ -1,4 +1,5 @@
 library(tidyverse)
+library("writexl")
 
 # Check which columns are metadata and which are species
 meta_cols <- c("Date", "Time.period", "Year", "Woody.species", "Locality",
@@ -14,3 +15,5 @@ df_long <- final_R %>%
 
 # Preview result
 print(head(df_long))
+
+write_xlsx(df_long, path = "format1.xlsx")
