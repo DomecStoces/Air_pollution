@@ -1,6 +1,7 @@
 #We have dropped Temperature from data stations at each sampled stands; 
 #Wind, T, Precipitation, interaction of Time.period and Immission is used in final model for better fit of AIC and LKT
 #Wind has a non-linear and slightly positive effect, with the strongest increase in abundance at higher wind speeds. This suggests wind may facilitate either beetle dispersal or trap performance under certain conditions.
+#Does policy changes affected the total number of carabids?
 
 library(mgcv) #GAM model
 library(gratia) #ggplot like visualization of estimated smooths
@@ -13,6 +14,18 @@ library(segmented)
 
 #Set formating of format1 dataset
 #####
+format1 <- format1 %>%
+  mutate(
+    PolicyPeriod = case_when(
+      Date < as.Date("1991-10-04") ~ "Pre1991",
+      Date >= as.Date("1991-10-04") & Date < as.Date("2002-06-01") ~ "1991_2002",
+      Date >= as.Date("2002-06-01") & Date < as.Date("2012-09-01") ~ "2002_2012",
+      Date >= as.Date("2012-09-01") ~ "Post2012"
+    )
+  )
+
+format1$PolicyPeriod <- as.factor(format1$PolicyPeriod)
+format1$Date <- as.factor(format1$Date)
 format1$Woody.species <- as.factor(format1$Woody.species)
 #Model hint
 #####
@@ -223,31 +236,4 @@ The biggest deviations between predicted and observed values happened early in t
 The pattern matches well with the timing of policy interventions, suggesting they likely had a positive impact.
 
 #####
-#Does policy changes affected the total number of carabids?
-#####
-format1 <- format1 %>%
-  mutate(
-    PolicyPeriod = case_when(
-      Date < as.Date("1991-10-04") ~ "Pre1991",
-      Date >= as.Date("1991-10-04") & Date < as.Date("2002-06-01") ~ "1991_2002",
-      Date >= as.Date("2002-06-01") & Date < as.Date("2012-09-01") ~ "2002_2012",
-      Date >= as.Date("2012-09-01") ~ "Post2012"
-    )
-  )
 
-format1$PolicyPeriod <- as.factor(format1$PolicyPeriod)
-format1$Date <- as.factor(format1$Date)
-
-fit8<-gam(Number ~ s(Time.period, by=PolicyPeriod) + s(Wind,k=12)+ s(T, k = 8) + s(Precipitation, k = 8) + ti(Time.period, Immission, k = c(10, 8)) + s(Woody.species, bs = "re"), data = format1, family = nb(), method = "ML")
-
-fit9<-gam(Number ~ s(Time.period, PolicyPeriod,bs="fs") + s(Wind)+ s(T) + s(Precipitation) + ti(Time.period, Immission) + s(Woody.species, bs = "re"), data = format1, family = nb(), method = "ML")
-
-
-gam4 <- gam(Number ~ s(Time.period, PolicyPeriod, bs = "fs") + 
-              s(Immission) + s(T, k=10) + s(Precipitation, k=10), 
-            family = nb(), data = format1)
-
-summary(gam4)
-
-AIC(fit1, fit8, fit9)
-anova(fit1, fit8, fit9, test = "Chisq")
