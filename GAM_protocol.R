@@ -1,6 +1,6 @@
 #We have dropped Temperature from data stations at each sampled stands; 
 #Wind, T, Precipitation, interaction of Time.period and Immission is used in final model for better fit of AIC and LKT
-
+#Wind has a non-linear and slightly positive effect, with the strongest increase in abundance at higher wind speeds. This suggests wind may facilitate either beetle dispersal or trap performance under certain conditions.
 
 library(mgcv) #GAM model
 library(gratia) #ggplot like visualization of estimated smooths
@@ -45,7 +45,7 @@ disp_nb
 #####
 #Smooth interaction using tensor product smooth, but not to overpredict abundance (i.e., overfitting or extrapolating)
 fit1<-gam(Number ~ s(Time.period, k = 10) + s(Wind,k=12)+ s(T, k = 8) + s(Precipitation, k = 8) + ti(Time.period, Immission, k = c(10, 8)) + s(Woody.species, bs = "re"), data = format1, family = nb(), method = "REML")
-
+# 4.3% are explained by the model with n=16 213
 #Check concurvity
 concurvity(fit1)
 #Residual diagnosis k-index >= 1 (setting for model); basis dimensions were checked and tuned.
@@ -82,6 +82,7 @@ vis.gam(fit1,
         phi = 30,
         ticktype = "detailed",
         main = "Interaction: Time × SO₂ Immission")
+
 
 #####
 fit_linear_time <- gam(Number ~ Time.period + 
