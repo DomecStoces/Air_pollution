@@ -113,50 +113,70 @@ format1$Predicted <- predict(fit1, type = "response")
 format1$Residual <- format1$Number - format1$Predicted
 
 # Policy change dates
+#903
 policy1 <- as.numeric(as.Date("1991-10-04") - as.Date("1989-04-15")) + 1
+#4785
 policy2 <- as.numeric(as.Date("2002-06-01") - as.Date("1989-04-15")) + 1
 policy3 <- as.numeric(as.Date("2012-09-01") - as.Date("1989-04-15")) + 1
 
-ggplot(format1, aes(x = Time.period, y = Immission)) +
-  # Residual points
-  geom_point(aes(size = abs(Residual), fill = Residual),
-             shape = 21, colour = "black", alpha = 0.7) +
+fig1 <- ggplot(format1, aes(x = Time.period, y = Immission)) +
+  # Residual points (size only, scaled)
+  geom_point(aes(size = abs(Residual)),
+             shape = 21, fill = "gray70", colour = "black", alpha = 0.7) +
   
-  # Trend line
+  # GAM smooth with CI ribbon
   geom_smooth(method = "gam", formula = y ~ s(x, bs = "cs"),
-              colour = "black", linetype = "dashed", linewidth = 1, se = FALSE) +
+              colour = "black", fill = "gray50", alpha = 0.4,
+              linewidth = 1, se = TRUE) +
   
-  # Vertical policy change lines
-  geom_vline(xintercept = 903, linetype = "dotted", color = "darkred", linewidth = 0.8) +
-  geom_vline(xintercept = 4785, linetype = "dashed", color = "darkred", linewidth = 0.8) +
+  # Size scale restricted to large residuals
+  scale_size_continuous(
+    range = c(0.1, 6),
+    name = "Abs(Residual)",
+    breaks = c(5, 10, 25, 50, 75),
+    limits = c(5, max(abs(format1$Residual), na.rm = TRUE))
+  ) +
+  
+  # Policy lines
+  geom_vline(xintercept = policy1, linetype = "dotted", color = "darkred", linewidth = 0.8) +
+  geom_vline(xintercept = policy2, linetype = "dashed", color = "darkred", linewidth = 0.8) +
   geom_vline(xintercept = policy3, linetype = "dotdash", color = "darkred", linewidth = 0.8) +
   
-  # Annotations for policy changes
-  annotate("text", x = 903, hjust = 1, y = max(format1$Immission, na.rm = TRUE) - 5,
+  # Policy annotations
+  annotate("text", x = policy1, hjust = 1, y = max(format1$Immission, na.rm = TRUE) - 5,
            label = "Policy change (1991)", angle = 90, vjust = -0.5, size = 4, color = "darkred") +
-  annotate("text", x = 4785, hjust = 1, y = max(format1$Immission, na.rm = TRUE) - 5,
+  annotate("text", x = policy2, hjust = 1, y = max(format1$Immission, na.rm = TRUE) - 5,
            label = "Regulation update (2002)", angle = 90, vjust = -0.5, size = 4, color = "darkred") +
   annotate("text", x = policy3, hjust = 1, y = max(format1$Immission, na.rm = TRUE) - 5,
            label = "Air protection act (2012)", angle = 90, vjust = -0.5, size = 4, color = "darkred") +
   
-  # Scales for fill and size
-  scale_fill_gradient2(low = "blue", mid = "white", high = "red",
-                       midpoint = 0, name = "Residual") +
-  scale_size_continuous(range = c(1, 6), name = "Abs(Residual)") +
+  # Avoid clipping rug or annotation overflow
+  coord_cartesian(clip = "off") +
   
-  # Clean black axes and no grid
+  # Theme: no grid, strong axes
   theme_minimal(base_size = 14) +
   theme(
     panel.grid.major = element_blank(),
     panel.grid.minor = element_blank(),
     axis.line = element_line(color = "black", linewidth = 0.6),
-    axis.ticks = element_line(color = "black")
+    axis.ticks = element_line(color = "black"),
+    axis.ticks.length = unit(5, "pt")
   ) +
   
-  # Title and axis labels
+  # Labels
   labs(
     title = "Residuals of GAM: observed - predicted with pollution trend and policy changes",
     x = "Time period",
-    y = "SO2 immission"
+    y = "SO2 pollution"
   )
 
+
+fig1
+
+tiff("SO2_pollution.tiff", 
+     width = 25, height = 10,     
+     units = "in",                  
+     res = 500,                     
+     compression = "lzw")           
+fig1
+dev.off()
