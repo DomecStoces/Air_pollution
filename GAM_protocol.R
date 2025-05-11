@@ -119,6 +119,8 @@ policy1 <- as.numeric(as.Date("1991-10-04") - as.Date("1989-04-15")) + 1
 policy2 <- as.numeric(as.Date("2002-06-01") - as.Date("1989-04-15")) + 1
 policy3 <- as.numeric(as.Date("2012-09-01") - as.Date("1989-04-15")) + 1
 
+#only residuals ≥ 5 are shown in points
+#the GAM smooth still uses the full dataset (format1) for context
 fig1 <- ggplot(format1, aes(x = Time.period, y = Immission)) +
   # Residual points (size only, scaled)
   geom_point(aes(size = abs(Residual)),
