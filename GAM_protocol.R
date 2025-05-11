@@ -88,9 +88,11 @@ fit3<-gam(Number ~ s(Time.period) + s(T) + s(Precipitation) + ti(Time.period, Im
 fit4<-gam(Number ~ s(Time.period) + ti(Time.period, Immission) + s(Woody.species, bs = "re"), data = format1, family = nb(), method = "ML")
 
 fit5<-gam(Number ~ s(T) + s(Precipitation) + s(Immission) + ti(Time.period, Immission) + s(Woody.species, bs = "re"), data = format1, family = nb(), method = "ML")
-AIC(fit2,fit5)
-anova(fit2, fit5, test = "Chisq")
+AIC(fit2,fit_linear_time )
+anova(fit2, fit_linear_time, test = "Chisq")
 #it is better to stick with 'Immission' as interaction term only
 #it is better to use model with the Temperature and Precipitation; and Immission in interaction term with Time period
 #there is an independent temporal trend in data (e.g., seasonal or long-term effects)
 #that trend is further modulated by Immission, captured by the interaction.
+#Time.period does not behave as linear predictor
+
