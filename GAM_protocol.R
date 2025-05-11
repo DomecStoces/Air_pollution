@@ -11,6 +11,7 @@ library(ggplot2)
 library(dplyr)
 library(patchwork)
 library(segmented)
+library(broom)
 
 #Set formating of format1 dataset
 #####
@@ -65,10 +66,25 @@ fit1 <- gam(Number ~ s(Time.period, by = PolicyPeriod,k=10) +
               s(Woody.species, bs = "re"), 
             data = format1, family = nb(), method = "REML")
 # 4.3% are explained by the model with n=16 213
+summary(fit1)
+
+fig2<-draw(fit1)
+
+tiff("Plot_smooths.tiff", 
+     width = 15, height = 10,     
+     units = "in",                  
+     res = 600,                     
+     compression = "lzw")           
+fig2
+dev.off()
+
+
+tidy(fit1, parametric = TRUE)   # for parametric terms
+tidy(fit1, parametric = FALSE)  # for smooth terms
 #Check concurvity
 concurvity(fit1)
 #Residual diagnosis k-index >= 1 (setting for model); basis dimensions were checked and tuned.
-gam.check(fit7)
+gam.check(fit1)
 #Check AIC for complexity and penalty for lower parsimony
 AIC(fit1)
 #multicollinearity => The alignment of low SO₂ and higher precipitation around that time is real, not statistical redundancy.
@@ -175,7 +191,7 @@ fig1 <- ggplot(format1 %>% filter(abs(Residual) >= 5), aes(x = Date, y = Immissi
     date_labels = "%Y",
     expand = expansion(add = c(250, 0))
   ) +
-  theme_minimal(base_size = 14, base_family = "Arial") +
+  theme_minimal(base_size = 15, "Calibri") +
   theme(
     panel.grid.major = element_blank(),
     panel.grid.minor = element_blank(),
@@ -189,9 +205,9 @@ fig1 <- ggplot(format1 %>% filter(abs(Residual) >= 5), aes(x = Date, y = Immissi
 fig1
 
 tiff("SO2_pollution.tiff", 
-     width = 25, height = 10,     
+     width = 15, height = 10,     
      units = "in",                  
-     res = 500,                     
+     res = 600,                     
      compression = "lzw")           
 fig1
 dev.off()
