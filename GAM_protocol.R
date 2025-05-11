@@ -6,14 +6,9 @@ library(mgcViz)
 #Set formating of format1 dataset
 #####
 format1$Woody.species <- as.factor(format1$Woody.species)
-format1_clean <- na.omit(format1[, c("Number", "Time.period", "Immission", "Woody.species")])
 #Model hint
 #####
 #Always check concurvity (mgcv::concurvity()), and plot interactions using vis.gam() or gratia::draw()
-
-#Smooth interaction using tensor product smooth
-fit1<-gam(Number ~ s(Time.period) + s(Immission) + ti(Time.period, Immission) + s(Woody.species, bs = "re"), 
-    data = format1, family = nb(), method = "REML")
 
 #Check for better model fit of family()
 #####
@@ -40,6 +35,14 @@ disp_nb
 
 #Modelling
 #####
+#Smooth interaction using tensor product smooth
+fit1<-gam(Number ~ s(Time.period, k = 15) + s(T, k = 12) + s(Precipitation, k = 12) + ti(Time.period, Immission, k = c(15, 10)) + s(Woody.species, bs = "re"), data = format1, family = nb(), method = "REML")
+
+#Check concurvity
+concurvity(fit1)
+#Residual diagnosis
+gam.check(fit1)
+#Visualization
 draw(fit1, select = "ti(Time.period,Immission)")
 
 vis.gam(fit1,
@@ -59,3 +62,13 @@ vis.gam(fit1,
         phi = 30,
         ticktype = "detailed",
         main = "Interaction: Time × SO₂ Immission")
+
+#Different model options of 'Immission' term:
+
+fit2<-gam(Number ~ s(Time.period) + s(T) + s(Precipitation) + s(Immission)+ ti(Time.period, Immission) + s(Woody.species, bs = "re"), data = format1, family = nb(), method = "ML")
+
+fit3<-gam(Number ~ s(Time.period) + s(T) + s(Precipitation) + ti(Time.period, Immission) + s(Woody.species, bs = "re"), data = format1, family = nb(), method = "ML")
+
+AIC(fit2,fit3)
+anova(fit2, fit3, test = "Chisq")
+#it is better to stick with 'Immission' as interaction term only
