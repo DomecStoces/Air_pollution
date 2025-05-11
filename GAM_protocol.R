@@ -1,4 +1,6 @@
-#We have dropped Temperature from data stations at each sampled stands; and Wind due to redundancy. 
+#We have dropped Temperature from data stations at each sampled stands; 
+#Wind, T, Precipitation, interaction of Time.period and Immission is used in final model for better fit of AIC and LKT
+
 
 library(mgcv) #GAM model
 library(gratia) #ggplot like visualization of estimated smooths
@@ -42,15 +44,15 @@ disp_nb
 #Final model fit
 #####
 #Smooth interaction using tensor product smooth, but not to overpredict abundance (i.e., overfitting or extrapolating)
-fit1<-gam(Number ~ s(Time.period, k = 10) + s(T, k = 8) + s(Precipitation, k = 8) + ti(Time.period, Immission, k = c(10, 8)) + s(Woody.species, bs = "re"), data = format1, family = nb(), method = "REML")
+fit1<-gam(Number ~ s(Time.period, k = 10) + s(Wind,k=12)+ s(T, k = 8) + s(Precipitation, k = 8) + ti(Time.period, Immission, k = c(10, 8)) + s(Woody.species, bs = "re"), data = format1, family = nb(), method = "REML")
 
 #Check concurvity
 concurvity(fit1)
 #Residual diagnosis k-index >= 1 (setting for model); basis dimensions were checked and tuned.
-gam.check(fit1)
+gam.check(fit7)
 
 #multicollinearity => The alignment of low SO₂ and higher precipitation around that time is real, not statistical redundancy.
-cor(format1[, c("Immission", "T", "Precipitation")], use = "complete.obs")
+cor(format1[, c("Immission", "T", "Precipitation", "Wind")], use = "complete.obs")
 #Visualization
 plot(fit1, select = 4, scheme = 2, 
      shade = TRUE, 
@@ -97,8 +99,8 @@ fit3<-gam(Number ~ s(Time.period) + s(T) + s(Precipitation) + ti(Time.period, Im
 fit4<-gam(Number ~ s(Time.period) + ti(Time.period, Immission) + s(Woody.species, bs = "re"), data = format1, family = nb(), method = "ML")
 
 fit5<-gam(Number ~ s(T) + s(Precipitation) + s(Immission) + ti(Time.period, Immission) + s(Woody.species, bs = "re"), data = format1, family = nb(), method = "ML")
-AIC(fit2,fit_linear_time )
-anova(fit2, fit_linear_time, test = "Chisq")
+AIC(fit2,fit7)
+anova(fit2, fit7, test = "Chisq")
 #it is better to stick with 'Immission' as interaction term only
 #it is better to use model with the Temperature and Precipitation; and Immission in interaction term with Time period
 #there is an independent temporal trend in data (e.g., seasonal or long-term effects)
