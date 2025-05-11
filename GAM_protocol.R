@@ -9,6 +9,7 @@ library(mgcViz)
 library(ggplot2)
 library(dplyr)
 library(patchwork)
+library(segmented)
 
 #Set formating of format1 dataset
 #####
@@ -45,13 +46,14 @@ disp_nb
 #Final model fit
 #####
 #Smooth interaction using tensor product smooth, but not to overpredict abundance (i.e., overfitting or extrapolating)
-fit1<-gam(Number ~ s(Time.period, k = 10) + s(Wind,k=12)+ s(T, k = 8) + s(Precipitation, k = 8) + ti(Time.period, Immission, k = c(10, 8)) + s(Woody.species, bs = "re"), data = format1, family = nb(), method = "REML")
+fit1<-gam(Number ~ s(Time.period, k = 10) + s(Wind,k=12)+ s(T, k = 8) + s(Precipitation, k = 8) + ti(Time.period, Immission, k = c(10, 8)) + s(Woody.species, bs = "re"), data = format1, family = nb(), method = "ML")
 # 4.3% are explained by the model with n=16 213
 #Check concurvity
 concurvity(fit1)
 #Residual diagnosis k-index >= 1 (setting for model); basis dimensions were checked and tuned.
 gam.check(fit7)
-
+#Check AIC for complexity and penalty for lower parsimony
+AIC(fit1)
 #multicollinearity => The alignment of low SO₂ and higher precipitation around that time is real, not statistical redundancy.
 cor(format1[, c("Immission", "T", "Precipitation", "Wind")], use = "complete.obs")
 #Visualization
@@ -106,7 +108,7 @@ anova(fit2, fit7, test = "Chisq")
 #that trend is further modulated by Immission, captured by the interaction.
 #Time.period does not behave as linear predictor
 
-
+#####
 #Visualization of model in ggplot2
 #####
 format1$Predicted <- predict(fit1, type = "response")
@@ -215,3 +217,33 @@ After the 2002 and 2012 policy changes, both pollution and residuals stayed low,
 The biggest deviations between predicted and observed values happened early in the timeline.
 
 The pattern matches well with the timing of policy interventions, suggesting they likely had a positive impact.
+
+#####
+#Does policy changes affected the total number of carabids?
+#####
+format1 <- format1 %>%
+  mutate(
+    PolicyPeriod = case_when(
+      Date < as.Date("1991-10-04") ~ "Pre1991",
+      Date >= as.Date("1991-10-04") & Date < as.Date("2002-06-01") ~ "1991_2002",
+      Date >= as.Date("2002-06-01") & Date < as.Date("2012-09-01") ~ "2002_2012",
+      Date >= as.Date("2012-09-01") ~ "Post2012"
+    )
+  )
+
+format1$PolicyPeriod <- as.factor(format1$PolicyPeriod)
+format1$Date <- as.factor(format1$Date)
+
+fit8<-gam(Number ~ s(Time.period, by=PolicyPeriod) + s(Wind,k=12)+ s(T, k = 8) + s(Precipitation, k = 8) + ti(Time.period, Immission, k = c(10, 8)) + s(Woody.species, bs = "re"), data = format1, family = nb(), method = "ML")
+
+fit9<-gam(Number ~ s(Time.period, PolicyPeriod,bs="fs") + s(Wind)+ s(T) + s(Precipitation) + ti(Time.period, Immission) + s(Woody.species, bs = "re"), data = format1, family = nb(), method = "ML")
+
+
+gam4 <- gam(Number ~ s(Time.period, PolicyPeriod, bs = "fs") + 
+              s(Immission) + s(T, k=10) + s(Precipitation, k=10), 
+            family = nb(), data = format1)
+
+summary(gam4)
+
+AIC(fit1, fit8, fit9)
+anova(fit1, fit8, fit9, test = "Chisq")
