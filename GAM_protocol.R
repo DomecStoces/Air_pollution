@@ -69,6 +69,8 @@ fit2<-gam(Number ~ s(Time.period) + s(T) + s(Precipitation) + s(Immission)+ ti(T
 
 fit3<-gam(Number ~ s(Time.period) + s(T) + s(Precipitation) + ti(Time.period, Immission) + s(Woody.species, bs = "re"), data = format1, family = nb(), method = "ML")
 
-AIC(fit2,fit3)
-anova(fit2, fit3, test = "Chisq")
+fit4<-gam(Number ~ s(Time.period) + ti(Time.period, Immission) + s(Woody.species, bs = "re"), data = format1, family = nb(), method = "ML")
+AIC(fit2,fit4)
+anova(fit2, fit4, test = "Chisq")
 #it is better to stick with 'Immission' as interaction term only
+#it is better to use model with the Temperature and Precipitation; and Immission in interaction term with Time period
