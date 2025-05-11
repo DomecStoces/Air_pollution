@@ -1,7 +1,11 @@
+#We have dropped Temperature from data stations at each sampled stands; and Wind due to redundancy. 
+
 library(mgcv) #GAM model
 library(gratia) #ggplot like visualization of estimated smooths
 library(DHARMa)
 library(mgcViz)
+library(ggplot2)
+library(dplyr)
 
 #Set formating of format1 dataset
 #####
@@ -37,12 +41,16 @@ disp_nb
 #Modelling
 #Final model fit
 #####
-#Smooth interaction using tensor product smooth
-fit1<-gam(Number ~ s(Time.period, k = 12) + s(T, k = 13) + s(Precipitation, k = 15) + ti(Time.period, Immission, k = c(20, 15)) + s(Woody.species, bs = "re"), data = format1, family = nb(), method = "REML")
+#Smooth interaction using tensor product smooth, but not to overpredict abundance (i.e., overfitting or extrapolating)
+fit1<-gam(Number ~ s(Time.period, k = 10) + s(T, k = 8) + s(Precipitation, k = 8) + ti(Time.period, Immission, k = c(10, 8)) + s(Woody.species, bs = "re"), data = format1, family = nb(), method = "REML")
+
 #Check concurvity
 concurvity(fit1)
 #Residual diagnosis k-index >= 1 (setting for model); basis dimensions were checked and tuned.
 gam.check(fit1)
+
+#multicollinearity => The alignment of low SO₂ and higher precipitation around that time is real, not statistical redundancy.
+cor(format1[, c("Immission", "T", "Precipitation")], use = "complete.obs")
 #Visualization
 plot(fit1, select = 4, scheme = 2, 
      shade = TRUE, 
@@ -56,13 +64,13 @@ draw(fit1, select = "ti(Time.period,Immission)",
   xlab("Time.period") + ylab("Immission")
 
 vis.gam(fit1,
-        view = c("Time.period", "Immission"),
+        view = c("Time.period", "Precipitation"),
         plot.type = "contour",
         color = "terrain",
         too.far = 0.05,
-        main = "Interaction: Time × SO₂ Immission",
+        main = "Time period",
         xlab = "Time period",
-        ylab = "SO₂ immission")
+        ylab = "Precipitation")
 
 vis.gam(fit1,
         view = c("Time.period", "Immission"),
@@ -72,6 +80,7 @@ vis.gam(fit1,
         phi = 30,
         ticktype = "detailed",
         main = "Interaction: Time × SO₂ Immission")
+
 #####
 fit_linear_time <- gam(Number ~ Time.period + 
                          s(T) + 
