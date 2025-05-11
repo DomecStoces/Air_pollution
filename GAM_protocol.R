@@ -130,13 +130,12 @@ ggplot(format1, aes(x = Time.period, y = Immission)) +
   geom_vline(xintercept = policy3, linetype = "dotdash", color = "darkred", linewidth = 0.8) +
   
   # Annotations for each policy
-  annotate("text", x = 1003, y = max(format1$Immission, na.rm = TRUE),
+  annotate("text", x = 903, hjust = -0.5, y = max(format1$Immission, na.rm = TRUE) - 50,
            label = "Policy change (1991)", angle = 90, vjust = -0.5, size = 3.5, color = "darkred") +
-  annotate("text", x = 4885, y = max(format1$Immission, na.rm = TRUE),
+  annotate("text", x = 4785, hjust = -0.5, y = max(format1$Immission, na.rm = TRUE) - 50,
            label = "Regulation update (2002)", angle = 90, vjust = -0.5, size = 3.5, color = "darkred") +
-  annotate("text", x = policy3 + 100, y = max(format1$Immission, na.rm = TRUE),
-           label = "Post-Kyoto policy (2012)", angle = 90, vjust = -0.5, size = 3.5, color = "darkred") +
-  
+  annotate("text", x = policy3, hjust = -0.5, y = max(format1$Immission, na.rm = TRUE) - 50,
+           label = "Air protection act (2012)", angle = 90, vjust = -0.5, size = 3.5, color = "darkred")+
   # Scales and theme
   scale_fill_gradient2(low = "blue", mid = "white", high = "red",
                        midpoint = 0, name = "Residual") +
