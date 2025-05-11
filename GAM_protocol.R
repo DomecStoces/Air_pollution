@@ -46,7 +46,11 @@ disp_nb
 #Final model fit
 #####
 #Smooth interaction using tensor product smooth, but not to overpredict abundance (i.e., overfitting or extrapolating)
-fit1<-gam(Number ~ s(Time.period, k = 10) + s(Wind,k=12)+ s(T, k = 8) + s(Precipitation, k = 8) + ti(Time.period, Immission, k = c(10, 8)) + s(Woody.species, bs = "re"), data = format1, family = nb(), method = "ML")
+fit1 <- gam(Number ~ s(Time.period, by = PolicyPeriod,k=10) + 
+              s(Wind, k = 12) + s(T, k = 8) + s(Precipitation, k = 8) + 
+              ti(Time.period, Immission, k = c(10, 8)) + 
+              s(Woody.species, bs = "re"), 
+            data = format1, family = nb(), method = "REML")
 # 4.3% are explained by the model with n=16 213
 #Check concurvity
 concurvity(fit1)
