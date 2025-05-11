@@ -118,33 +118,45 @@ policy2 <- as.numeric(as.Date("2002-06-01") - as.Date("1989-04-15")) + 1
 policy3 <- as.numeric(as.Date("2012-09-01") - as.Date("1989-04-15")) + 1
 
 ggplot(format1, aes(x = Time.period, y = Immission)) +
+  # Residual points
   geom_point(aes(size = abs(Residual), fill = Residual),
              shape = 21, colour = "black", alpha = 0.7) +
   
+  # Trend line
   geom_smooth(method = "gam", formula = y ~ s(x, bs = "cs"),
               colour = "black", linetype = "dashed", linewidth = 1, se = FALSE) +
   
-  # Vertical lines for policy changes
+  # Vertical policy change lines
   geom_vline(xintercept = 903, linetype = "dotted", color = "darkred", linewidth = 0.8) +
   geom_vline(xintercept = 4785, linetype = "dashed", color = "darkred", linewidth = 0.8) +
   geom_vline(xintercept = policy3, linetype = "dotdash", color = "darkred", linewidth = 0.8) +
   
-  # Annotations for each policy
-  annotate("text", x = 903, hjust = -0.5, y = max(format1$Immission, na.rm = TRUE) - 50,
-           label = "Policy change (1991)", angle = 90, vjust = -0.5, size = 3.5, color = "darkred") +
-  annotate("text", x = 4785, hjust = -0.5, y = max(format1$Immission, na.rm = TRUE) - 50,
-           label = "Regulation update (2002)", angle = 90, vjust = -0.5, size = 3.5, color = "darkred") +
-  annotate("text", x = policy3, hjust = -0.5, y = max(format1$Immission, na.rm = TRUE) - 50,
-           label = "Air protection act (2012)", angle = 90, vjust = -0.5, size = 3.5, color = "darkred")+
-  # Scales and theme
+  # Annotations for policy changes
+  annotate("text", x = 903, hjust = 1, y = max(format1$Immission, na.rm = TRUE) - 5,
+           label = "Policy change (1991)", angle = 90, vjust = -0.5, size = 4, color = "darkred") +
+  annotate("text", x = 4785, hjust = 1, y = max(format1$Immission, na.rm = TRUE) - 5,
+           label = "Regulation update (2002)", angle = 90, vjust = -0.5, size = 4, color = "darkred") +
+  annotate("text", x = policy3, hjust = 1, y = max(format1$Immission, na.rm = TRUE) - 5,
+           label = "Air protection act (2012)", angle = 90, vjust = -0.5, size = 4, color = "darkred") +
+  
+  # Scales for fill and size
   scale_fill_gradient2(low = "blue", mid = "white", high = "red",
                        midpoint = 0, name = "Residual") +
   scale_size_continuous(range = c(1, 6), name = "Abs(Residual)") +
   
+  # Clean black axes and no grid
+  theme_minimal(base_size = 14) +
+  theme(
+    panel.grid.major = element_blank(),
+    panel.grid.minor = element_blank(),
+    axis.line = element_line(color = "black", linewidth = 0.6),
+    axis.ticks = element_line(color = "black")
+  ) +
+  
+  # Title and axis labels
   labs(
     title = "Residuals of GAM: observed - predicted with pollution trend and policy changes",
     x = "Time period",
     y = "SO2 immission"
-  ) +
-  theme_minimal(base_size = 14)
+  )
 
