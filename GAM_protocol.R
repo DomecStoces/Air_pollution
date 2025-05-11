@@ -169,7 +169,7 @@ fig1 <- ggplot(format1, aes(x = Time.period, y = Immission)) +
   labs(
     title = "Residuals of GAM: observed - predicted with pollution trend and policy changes",
     x = "Time period",
-    y = "SO2 pollution"
+    y = "SO2 pollution [μg.m-3]"
   )
 
 
@@ -182,3 +182,42 @@ tiff("SO2_pollution.tiff",
      compression = "lzw")           
 fig1
 dev.off()
+
+#What the graph shows:
+The vertical axis (y-axis) shows the level of SO₂ pollution over time.
+
+The horizontal axis (x-axis) shows the progression of time starting from April 15, 1989.
+
+Each point represents a measurement. The bigger the point, the larger the difference between what the model predicted and what was actually measured (these differences are called residuals).
+
+The black curve shows the overall trend in SO₂ pollution estimated by your model, with a light gray area around it showing the model’s uncertainty.
+
+The three vertical red lines mark important policy changes:
+  
+In 1991: a policy change began.
+
+In 2002: pollution regulations were updated.
+
+In 2012: a new air protection act came into force.
+
+🟡 What it means:
+  SO₂ pollution clearly decreased over the 26-year period.
+
+The drop was strongest in the early years, especially before 2002.
+
+After 2002, pollution levels leveled off and stayed low.
+
+The largest modeling errors (biggest points) happened before 2000, suggesting:
+  
+  Either SO₂ levels were harder to predict in the early years,
+
+Or that the model fits the later years much better.
+
+After the 2002 and 2012 policy changes, both pollution and residuals stayed low, which supports the idea that the regulations were effective.
+
+🟠 In summary:
+  Your model shows a clear improvement in air quality over time.
+
+The biggest deviations between predicted and observed values happened early in the timeline.
+
+The pattern matches well with the timing of policy interventions, suggesting they likely had a positive impact.
