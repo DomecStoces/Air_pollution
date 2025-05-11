@@ -58,7 +58,7 @@ disp_nb
 #Modelling
 #Final model fit
 #####
-#Smooth interaction using tensor product smooth, but not to overpredict abundance (i.e., overfitting or extrapolating)
+#Group-varying smooth model; interaction using tensor product smooth, but not to overpredict abundance (i.e., overfitting or extrapolating)
 fit1 <- gam(Number ~ s(Time.period, by = PolicyPeriod,k=10) + 
               s(Wind, k = 12) + s(T, k = 8) + s(Precipitation, k = 8) + 
               ti(Time.period, Immission, k = c(10, 8)) + 
@@ -197,43 +197,36 @@ fig1
 dev.off()
 
 #What the graph shows:
-The vertical axis (y-axis) shows the level of SO₂ pollution over time.
-
-The horizontal axis (x-axis) shows the progression of time starting from April 15, 1989.
-
-Each point represents a measurement. The bigger the point, the larger the difference between what the model predicted and what was actually measured (these differences are called residuals).
-
-The black curve shows the overall trend in SO₂ pollution estimated by your model, with a light gray area around it showing the model’s uncertainty.
-
-The three vertical red lines mark important policy changes:
-  
-In 1991: a policy change began.
-
-In 2002: pollution regulations were updated.
-
-In 2012: a new air protection act came into force.
-
-🟡 What it means:
-  SO₂ pollution clearly decreased over the 26-year period.
-
-The drop was strongest in the early years, especially before 2002.
-
-After 2002, pollution levels leveled off and stayed low.
-
-The largest modeling errors (biggest points) happened before 2000, suggesting:
-  
-  Either SO₂ levels were harder to predict in the early years,
-
-Or that the model fits the later years much better.
-
-After the 2002 and 2012 policy changes, both pollution and residuals stayed low, which supports the idea that the regulations were effective.
-
-🟠 In summary:
-  Your model shows a clear improvement in air quality over time.
-
-The biggest deviations between predicted and observed values happened early in the timeline.
-
-The pattern matches well with the timing of policy interventions, suggesting they likely had a positive impact.
+We used a generalized additive model (GAM) with a negative binomial error distribution to model changes in carabid abundance over time. To test for temporal patterns specific to air quality policy periods, we included a varying smooth for Time.period by PolicyPeriod using s(Time.period, by = PolicyPeriod). Additional smooth terms accounted for nonlinear effects of temperature, precipitation, and wind, along with a tensor interaction between Time.period and SO₂ immission levels. Random variation among woody species was controlled with a random effect term (s(Woody.species, bs = "re")). Model fitting was performed using restricted maximum likelihood (REML).
 
 #####
+> summary(fit1)
 
+Family: Negative Binomial(1.609) 
+Link function: log 
+
+Formula:
+  Number ~ s(Time.period, by = PolicyPeriod, k = 10) + s(Wind, 
+                                                         k = 12) + s(T, k = 8) + s(Precipitation, k = 8) + ti(Time.period, 
+                                                                                                              Immission, k = c(10, 8)) + s(Woody.species, bs = "re")
+
+Parametric coefficients:
+  Estimate Std. Error z value Pr(>|z|)
+(Intercept)   0.6333     0.6489   0.976    0.329
+
+Approximate significance of smooth terms:
+  edf Ref.df  Chi.sq  p-value    
+s(Time.period):PolicyPeriod1991_2002  4.205  4.673  15.848  0.00319 ** 
+  s(Time.period):PolicyPeriod2002_2012  6.007  6.395  84.731  < 2e-16 ***
+  s(Time.period):PolicyPeriodPost2012   1.928  2.067   5.178  0.07344 .  
+s(Time.period):PolicyPeriodPre1991    1.773  1.885   3.983  0.09790 .  
+s(Wind)                               9.824 10.494 114.475  < 2e-16 ***
+  s(T)                                  6.019  6.629 378.776  < 2e-16 ***
+  s(Precipitation)                      6.164  6.729  60.512  < 2e-16 ***
+  ti(Time.period,Immission)            27.524 33.559 103.993  < 2e-16 ***
+  s(Woody.species)                      2.539  3.000  22.057 9.94e-06 ***
+  ---
+  Signif. codes:  0 ‘***’ 0.001 ‘**’ 0.01 ‘*’ 0.05 ‘.’ 0.1 ‘ ’ 1
+
+R-sq.(adj) =  0.0438   Deviance explained = 9.42%
+-REML =  37111  Scale est. = 1         n = 16213
