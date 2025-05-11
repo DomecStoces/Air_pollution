@@ -142,7 +142,7 @@ fig1 <- ggplot(format1 %>% filter(abs(Residual) >= 5), aes(x = Date, y = Immissi
   geom_vline(xintercept = policy2, linetype = "dashed", color = "darkred", linewidth = 0.8) +
   geom_vline(xintercept = policy3, linetype = "dashed", color = "darkred", linewidth = 0.8) +
   annotate("text", x = policy1, hjust = 1, y = max(format1$Immission, na.rm = TRUE) - 5,
-           label = "Policy change (04/10/1991)", angle = 90, vjust = -0.5, size = 4, color = "darkred") +
+           label = "Start of air policy (04/10/1991)", angle = 90, vjust = -0.5, size = 4, color = "darkred") +
   annotate("text", x = policy2, hjust = 1, y = max(format1$Immission, na.rm = TRUE) - 5,
            label = "Regulation update (01/06/2002)", angle = 90, vjust = -0.5, size = 4, color = "darkred") +
   annotate("text", x = policy3, hjust = 1, y = max(format1$Immission, na.rm = TRUE) - 5,
