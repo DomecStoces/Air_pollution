@@ -8,6 +8,7 @@ library(DHARMa)
 library(mgcViz)
 library(ggplot2)
 library(dplyr)
+library(patchwork)
 
 #Set formating of format1 dataset
 #####
@@ -54,25 +55,19 @@ gam.check(fit7)
 #multicollinearity => The alignment of low SO₂ and higher precipitation around that time is real, not statistical redundancy.
 cor(format1[, c("Immission", "T", "Precipitation", "Wind")], use = "complete.obs")
 #Visualization
-plot(fit1, select = 4, scheme = 2, 
-     shade = TRUE, 
-     main = "Interaction: Time.period × Immission", 
-     xlab = "Time.period", 
-     ylab = "Immission")
-
 draw(fit1, select = "ti(Time.period,Immission)", 
      contour = TRUE) +
   ggtitle("Tensor product smooth: Time × Immission") +
   xlab("Time.period") + ylab("Immission")
 
 vis.gam(fit1,
-        view = c("Time.period", "Precipitation"),
+        view = c("Time.period", "Immission"),
         plot.type = "contour",
-        color = "terrain",
+        color = "heat",
         too.far = 0.05,
         main = "Time period",
         xlab = "Time period",
-        ylab = "Precipitation")
+        ylab = "Immission")
 
 vis.gam(fit1,
         view = c("Time.period", "Immission"),
@@ -84,6 +79,8 @@ vis.gam(fit1,
         main = "Interaction: Time × SO₂ Immission")
 
 
+
+#Fit Time.period as linear predictor
 #####
 fit_linear_time <- gam(Number ~ Time.period + 
                          s(T) + 
@@ -91,6 +88,7 @@ fit_linear_time <- gam(Number ~ Time.period +
                          ti(Time.period, Immission) + 
                          s(Woody.species, bs = "re"),
                        data = format1, family = nb(), method = "ML")
+#####
 #Different model options of 'Immission' term:
 #####
 fit2<-gam(Number ~ s(Time.period) + s(T) + s(Precipitation) + s(Immission)+ ti(Time.period, Immission) + s(Woody.species, bs = "re"), data = format1, family = nb(), method = "ML")
@@ -108,3 +106,44 @@ anova(fit2, fit7, test = "Chisq")
 #that trend is further modulated by Immission, captured by the interaction.
 #Time.period does not behave as linear predictor
 
+
+#Visualization of model in ggplot2
+#####
+format1$Predicted <- predict(fit1, type = "response")
+format1$Residual <- format1$Number - format1$Predicted
+
+# Define policy change dates
+policy1 <- as.numeric(as.Date("1991-10-04") - as.Date("1989-04-15")) + 1
+policy2 <- as.numeric(as.Date("2002-06-01") - as.Date("1989-04-15")) + 1
+
+ggplot(format1, aes(x = Time.period, y = Immission)) +
+  geom_point(aes(size = abs(Residual), fill = Residual),
+             shape = 21, colour = "black", alpha = 0.7) +
+  
+  geom_smooth(method = "gam", formula = y ~ s(x, bs = "cs"),
+              colour = "black", linetype = "dashed", linewidth = 1, se = FALSE) +
+  
+  # Shaded policy periods (use annotate instead of geom_rect)
+  annotate("rect", xmin = 903, xmax = 4785, ymin = -Inf, ymax = Inf,
+           fill = "gray80", alpha = 0.2) +
+  annotate("rect", xmin = 4785, xmax = Inf, ymin = -Inf, ymax = Inf,
+           fill = "gray60", alpha = 0.2) +
+  
+  geom_vline(xintercept = 903, linetype = "dotted", color = "darkred", linewidth = 0.8) +
+  geom_vline(xintercept = 4785, linetype = "dashed", color = "darkred", linewidth = 0.8) +
+  
+  annotate("text", x = 1003, y = max(format1$Immission, na.rm = TRUE),
+           label = "Policy change (1991)", angle = 90, vjust = -0.5, size = 3.5, color = "darkred") +
+  annotate("text", x = 4885, y = max(format1$Immission, na.rm = TRUE),
+           label = "Regulation update (2002)", angle = 90, vjust = -0.5, size = 3.5, color = "darkred") +
+  
+  scale_fill_gradient2(low = "blue", mid = "white", high = "red",
+                       midpoint = 0, name = "Residual") +
+  scale_size_continuous(range = c(1, 6), name = "Abs(Residual)") +
+  
+  labs(
+    title = "Residuals of GAM: Observed - Predicted with Immission Trend and Policy Periods",
+    x = "Time period",
+    y = "SO₂ immission"
+  ) +
+  theme_minimal(base_size = 14)
