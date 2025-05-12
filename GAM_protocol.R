@@ -259,6 +259,8 @@ fig1
 
 breaks = pretty(range(filtered_data$Fitted, na.rm = TRUE), n = 5
 #####
+# Save the plot as a TIFF file
+#####
 tiff("SO2_pollution_residuals.tiff", 
      width = 15, height = 10,     
      units = "in",                  
