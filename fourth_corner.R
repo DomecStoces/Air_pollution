@@ -1,55 +1,47 @@
 library(readxl)
 library(ade4)
 
-# Load all sheets into a list
+# Load sheets into a named list
 fourth_corner <- lapply(c("sp", "env", "traits"), function(x) read_excel("fourth_corner.xlsx", sheet = x))
-
-# Assign names to the list elements
 names(fourth_corner) <- c("sp", "env", "traits")
 
-# Access individual sheets with the following syntax
-dim(fourth_corner$sp)     # Dimensions of 'sp' sheet
-dim(fourth_corner$env)    # Dimensions of 'env' sheet
-dim(fourth_corner$traits) # Dimensions of 'traits' sheet
+# Ensure no NA values
+fourth_corner$sp[is.na(fourth_corner$sp)] <- 0
+fourth_corner$traits[is.na(fourth_corner$traits)] <- 0
+fourth_corner$env[is.na(fourth_corner$env)] <- 0
 
+# Convert character variables in env to factors
 fourth_corner$env <- as.data.frame(lapply(fourth_corner$env, function(x) {
   if (is.character(x)) as.factor(x) else x
 }))
 
-fourth_corner$env$Elevation <- as.numeric(as.character(fourth_corner$env$Elevation))
-fourth_corner$env <- fourth_corner$env[, !names(fourth_corner$env)]
-fourth_corner$traits$Wingspan <- as.numeric(gsub(",", ".", fourth_corner$traits$Wingspan))
-
-# Convert numeric categorical columns to factors
-fourth_corner$env$`Movement pattern` <- as.factor(fourth_corner$env$`Movement pattern`)
-fourth_corner$env$Treatment <- as.factor(fourth_corner$env$Treatment)
-fourth_corner$env$Season <- as.factor(fourth_corner$env$Season)
-
+# Convert binary traits (0/1) to factors except Body.size
 fourth_corner$traits <- as.data.frame(fourth_corner$traits)
-fourth_corner$env <- as.data.frame(fourth_corner$env)
+binary_cols <- setdiff(names(fourth_corner$traits), "Body.size")
 
-fourth_corner$sp[is.na(fourth_corner$sp)] <- 0
-fourth_corner$traits[is.na(fourth_corner$traits)] <- 0
-afcL.aravo <- dudi.coa(fourth_corner$sp, scannf = FALSE)
-acpR.aravo <- dudi.hillsmith(fourth_corner$env, row.w = afcL.aravo$lw,
-                             scannf = FALSE)
-acpQ.aravo <- dudi.pca(fourth_corner$traits, row.w = afcL.aravo$cw,
-                       scannf = FALSE)
-rlq.aravo <- rlq(acpR.aravo, afcL.aravo, acpQ.aravo,
-                 scannf = FALSE)
+fourth_corner$traits[binary_cols] <- lapply(fourth_corner$traits[binary_cols], as.factor)
+# Ensure Body.size is numeric
+fourth_corner$traits$Body.size <- as.numeric(fourth_corner$traits$Body.size)
 
+# RLQ Analysis
+afcL <- dudi.coa(fourth_corner$sp, scannf = FALSE)
+acpR <- dudi.hillsmith(fourth_corner$env, row.w = afcL$lw, scannf = FALSE)
+acpQ <- dudi.pca(fourth_corner$traits, row.w = afcL$cw, scannf = FALSE)
+
+rlq_result <- rlq(acpR, afcL, acpQ, scannf = FALSE)
+
+# Fourth-corner analysis
 nrepet <- 999
-four.comb.aravo <- fourthcorner(fourth_corner$env, fourth_corner$sp,
-                                fourth_corner$traits, modeltype = 6, p.adjust.method.G = "none",
-                                p.adjust.method.D = "none", nrepet = nrepet)
+four.comb <- fourthcorner(fourth_corner$env, fourth_corner$sp, fourth_corner$traits,
+                          modeltype = 6, p.adjust.method.G = "none", 
+                          p.adjust.method.D = "none", nrepet = nrepet)
 
+# Plot fourth-corner results
+plot(four.comb, alpha = 0.05, stat = "D2")
+plot(four.comb, x.rlq = rlq_result, alpha = 0.05, stat = "D2", type = "biplot")
 
-plot(four.comb.aravo, alpha = 0.05, stat = "D2")
-plot(four.comb.aravo, x.rlq = rlq.aravo, alpha = 0.05,
-     stat = "D2", type = "biplot")
-
-Srlq <- fourthcorner2(fourth_corner$env, fourth_corner$sp,
-                      fourth_corner$traits,
+# RLQ-based fourth-corner significance test
+Srlq <- fourthcorner2(fourth_corner$env, fourth_corner$sp, fourth_corner$traits,
                       modeltype = 6, p.adjust.method.G = "fdr", nrepet = nrepet)
 Srlq$trRLQ
 
