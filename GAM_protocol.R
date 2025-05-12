@@ -208,7 +208,7 @@ fig1 <- ggplot(format1 %>% filter(abs(Residual) >= 5), aes(x = Date, y = Immissi
 
 fig1
 
-tiff("SO2_pollution.tiff", 
+tiff("SO2_pollution_residuals.tiff", 
      width = 15, height = 10,     
      units = "in",                  
      res = 600,                     
