@@ -12,7 +12,7 @@ cumulative_df <- cumulative_df %>%
   mutate(Cumulative_scaled = Cumulative / max(Cumulative, na.rm = TRUE) * max_y)
 
 # Step 2: Add to your existing plot
-fig1 <- ggplot(format1 %>% filter(abs(Residual) >= 5), aes(x = Date, y = Immission)) +
+fig2 <- ggplot(format1 %>% filter(abs(Residual) >= 5), aes(x = Date, y = Immission)) +
   geom_point(aes(size = abs(Residual)), shape = 21, fill = "gray70", colour = "black", alpha = 0.7) +
   geom_smooth(data = format1, aes(x = Date, y = Immission), method = "gam",
               formula = y ~ s(x, bs = "cs"), colour = "black", fill = "gray50",
@@ -39,7 +39,7 @@ fig1 <- ggplot(format1 %>% filter(abs(Residual) >= 5), aes(x = Date, y = Immissi
     breaks = seq(0, max_y, by = 20),
     expand = expansion(add = c(5, 0)),
     sec.axis = sec_axis(~ . * max(cumulative_df$Cumulative, na.rm = TRUE) / max_y,
-                        name = "Cumulative abundance (Number)")
+                        name = "Cumulative abundance")
   ) +
   scale_x_date(
     date_breaks = "3 years",
