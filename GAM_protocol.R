@@ -164,6 +164,8 @@ policy1 <- as.Date("1991-10-04")
 policy2 <- as.Date("2002-06-01")
 policy3 <- as.Date("2012-09-01")
 
+#Plotting the residuals
+#####
 #only residuals ≥ 5 are shown in points
 #the GAM smooth still uses the full dataset (format1) for context
 fig1 <- ggplot(format1 %>% filter(abs(Residual) >= 5), aes(x = Date, y = Immission)) +
@@ -205,9 +207,58 @@ fig1 <- ggplot(format1 %>% filter(abs(Residual) >= 5), aes(x = Date, y = Immissi
   labs(
     x = "Year",
     y = "SO₂ pollution [μg·m⁻³]")
+#####
+#Plotting the predicted values with threshold >2
+#####
+format1$Fitted <- fitted(fit1, type = "response")
+threshold <- 2
 
+filtered_data <- format1 %>% filter(Fitted >= threshold)
+
+fig1 <- ggplot(filtered_data, aes(x = Date, y = Immission)) +
+  geom_point(aes(size = Fitted), shape = 21, fill = "gray70", colour = "black", alpha = 0.7) +
+  geom_smooth(data = format1, aes(x = Date, y = Immission),
+              method = "gam", formula = y ~ s(x, bs = "cs"),
+              colour = "black", fill = "gray50", alpha = 0.4,
+              linewidth = 1, se = TRUE) +
+  scale_size_continuous(
+    range = c(0.1, 5),
+    name = "Predicted abundance",
+    breaks = c(3,5,7)
+  ) +
+  geom_vline(xintercept = policy1, linetype = "dashed", color = "black", linewidth = 0.8) +
+  geom_vline(xintercept = policy2, linetype = "dashed", color = "black", linewidth = 0.8) +
+  geom_vline(xintercept = policy3, linetype = "dashed", color = "black", linewidth = 0.8) +
+  annotate("text", x = policy1, hjust = 1, y = max(format1$Immission, na.rm = TRUE) - 5,
+           label = "Start of air policy (04/10/1991)", angle = 90, vjust = -0.5, size = 4, color = "black") +
+  annotate("text", x = policy2, hjust = 1, y = max(format1$Immission, na.rm = TRUE) - 5,
+           label = "Regulation update (01/06/2002)", angle = 90, vjust = -0.5, size = 4, color = "black") +
+  annotate("text", x = policy3, hjust = 1, y = max(format1$Immission, na.rm = TRUE) - 5,
+           label = "Air protection act (01/09/2012)", angle = 90, vjust = -0.5, size = 4, color = "black") +
+  scale_y_continuous(
+    limits = c(0, 150),
+    breaks = seq(0, 150, by = 20),
+    expand = expansion(add = c(5, 0))
+  ) +
+  scale_x_date(
+    date_breaks = "3 years",
+    date_labels = "%Y",
+    expand = expansion(add = c(250, 0))
+  ) +
+  theme_minimal(base_size = 15, base_family = "Calibri") +
+  theme(
+    panel.grid.major = element_blank(),
+    panel.grid.minor = element_blank(),
+    axis.line = element_line(color = "black", linewidth = 0.6),
+    axis.ticks = element_line(color = "black"),
+    axis.ticks.length = unit(5, "pt")) +
+  labs(
+    x = "Year",
+    y = "SO₂ pollution [μg·m⁻³]")
 fig1
 
+breaks = pretty(range(filtered_data$Fitted, na.rm = TRUE), n = 5
+#####
 tiff("SO2_pollution_residuals.tiff", 
      width = 15, height = 10,     
      units = "in",                  
