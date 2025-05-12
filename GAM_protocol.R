@@ -3,8 +3,8 @@
 #Wind has a non-linear and slightly positive effect, with the strongest increase in abundance at higher wind speeds. This suggests wind may facilitate either beetle dispersal or trap performance under certain conditions.
 #Does policy changes affected the total number of carabids?
 
-library(mgcv) #GAM model
-library(gratia) #ggplot like visualization of estimated smooths
+library(mgcv)
+library(gratia)
 library(DHARMa)
 library(mgcViz)
 library(ggplot2)
@@ -15,6 +15,8 @@ library(broom)
 
 #Set formating of format1 dataset
 #####
+format1 <- format1 %>%
+  mutate(Date = as.Date(Date))
 format1 <- format1 %>%
   mutate(
     PolicyPeriod = case_when(
@@ -28,6 +30,8 @@ format1 <- format1 %>%
 format1$PolicyPeriod <- as.factor(format1$PolicyPeriod)
 format1$Date <- as.factor(format1$Date)
 format1$Woody.species <- as.factor(format1$Woody.species)
+
+str(format1$Date)
 #Model hint
 #####
 #Always check concurvity (mgcv::concurvity()), and plot interactions using vis.gam() or gratia::draw()
