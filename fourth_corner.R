@@ -1,3 +1,6 @@
+#Trait-ediated responses to SO₂ pressure: not focused directly on year trends, but rather how species traits are selected over environmental gradients.
+#Are moisture-loving beetles declining under increasing immission?
+
 library(readxl)
 library(ade4)
 

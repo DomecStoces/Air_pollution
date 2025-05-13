@@ -277,9 +277,20 @@ fig1
 dev.off()
 
 #What the graph shows:
+Multiscale ecological inference towards SO2 polluttion over 26 years: view of carabids
 We used a generalized additive model (GAM) with a negative binomial error distribution to model changes in carabid abundance over time. To test for temporal patterns specific to air quality policy periods, we included a varying smooth for Time.period by PolicyPeriod using s(Time.period, by = PolicyPeriod). Additional smooth terms accounted for nonlinear effects of temperature, precipitation, and wind, along with a tensor interaction between Time.period and SO₂ immission levels. Random variation among woody species was controlled with a random effect term (s(Woody.species, bs = "re")). Model fitting was performed using restricted maximum likelihood (REML).
-
+How does carabid activity change under declining SO₂ levels across policy periods?
 #####
+Tests how individual carabid abundance (response) is influenced by:
+  
+  Time trends per policy period (i.e. segmented temporal effects)
+
+SO₂ × time interaction
+
+Microclimatic variables (Wind, Temp, Precip)
+
+Random effects of tree species
+
 > summary(fit1)
 
 Family: Negative Binomial(1.609) 
