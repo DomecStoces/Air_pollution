@@ -29,7 +29,7 @@ rlq_result <- rlq(acpR, afcL, acpQ, scannf = FALSE)
 
 
 # Fourth-corner analysis
-nrepet <- 999
+nrepet <- 100
 four.comb <- fourthcorner(fourth_corner$env, fourth_corner$sp, fourth_corner$traits,
                           modeltype = 6, p.adjust.method.G = "none", 
                           p.adjust.method.D = "none", nrepet = nrepet)
@@ -44,7 +44,7 @@ Srlq <- fourthcorner2(fourth_corner$env, fourth_corner$sp, fourth_corner$traits,
 Srlq$trRLQ
 
 tiff('table.tiff', units="in", width=8, height=10, res=600)
-plot(four.comb.aravo, alpha = 0.05, stat = "D2")
+plot(four.comb, alpha = 0.05, stat = "D2")
 dev.off()
 
 pdf('table.pdf', width=8, height=10)

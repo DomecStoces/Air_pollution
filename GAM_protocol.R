@@ -14,6 +14,7 @@ library(segmented)
 library(broom)
 
 #Set formating of format1 dataset
+format1 <- read_excel("format1.xlsx")
 #####
 format1 <- format1 %>%
   mutate(Date = as.Date(Date))
@@ -67,6 +68,12 @@ disp_nb
 fit1 <- gam(Number ~ s(Time.period, by = PolicyPeriod,k=10) + 
               s(Wind, k = 12) + s(T, k = 8) + s(Precipitation, k = 8) + 
               ti(Time.period, Immission, k = c(10, 8)) + 
+              s(Woody.species, bs = "re"), 
+            data = format1, family = nb(), method = "REML")
+
+fit1 <- gam(Number ~ s(Time.period, by = PolicyPeriod) + 
+              s(Wind) + s(T) + s(Precipitation) + 
+              ti(Time.period, Immission) + 
               s(Woody.species, bs = "re"), 
             data = format1, family = nb(), method = "REML")
 # 4.3% are explained by the model with n=16 213
@@ -224,7 +231,7 @@ fig1 <- ggplot(filtered_data, aes(x = Date, y = Immission)) +
   scale_size_continuous(
     range = c(0.1, 5),
     name = "Predicted abundance",
-    breaks = c(3,5,7)
+    breaks = c(3,4,5)
   ) +
   geom_vline(xintercept = policy1, linetype = "dashed", color = "black", linewidth = 0.8) +
   geom_vline(xintercept = policy2, linetype = "dashed", color = "black", linewidth = 0.8) +
@@ -261,7 +268,7 @@ breaks = pretty(range(filtered_data$Fitted, na.rm = TRUE), n = 5
 #####
 # Save the plot as a TIFF file
 #####
-tiff("SO2_pollution_residuals.tiff", 
+tiff("SO2_pollution_predictions.tiff", 
      width = 15, height = 10,     
      units = "in",                  
      res = 600,                     
