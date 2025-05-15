@@ -5,10 +5,26 @@
 library(vegan)
 library(dplyr)
 library(tidyr)
+library(readxl)
 
+format1 <- format1 %>%
+  mutate(Date = as.Date(Date))
+format1 <- format1 %>%
+  mutate(
+    PolicyPeriod = case_when(
+      Date < as.Date("1991-10-04") ~ "Pre1991",
+      Date >= as.Date("1991-10-04") & Date < as.Date("2002-06-01") ~ "1991_2002",
+      Date >= as.Date("2002-06-01") & Date < as.Date("2012-09-01") ~ "2002_2012",
+      Date >= as.Date("2012-09-01") ~ "Post2012"
+    )
+  )
+
+format1$PolicyPeriod <- as.factor(format1$PolicyPeriod)
+format1$Date <- as.factor(format1$Date)
+format1$Woody.species <- as.factor(format1$Woody.species)
 #Create a unique sample ID for grouping variable
 format1 <- format1 %>%
-  mutate(SampleID = paste(Date, Locality, Woody.species, sep = "_"))
+  mutate(SampleID = paste(Time.period, Locality, Woody.species, sep = "_"))
 
 #Create species matrix: rows = samples, columns = species, values = total abundance
 sp_matrix <- format1 %>%
