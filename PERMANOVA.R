@@ -1,8 +1,10 @@
 #PERMANOVA: to test global effects
-#How community composition (species assemblages) varies with SO₂ and year?
+#How community composition (species assemblages divided into life-history traits) varies with SO₂ and year?
+#Are the species identities and abundances different between time periods?
 
 library(vegan)
 library(dplyr)
+library(tidyr)
 
 #Create a unique sample ID for grouping variable
 format1 <- format1 %>%
@@ -16,27 +18,34 @@ sp_matrix <- format1 %>%
 #####
 #Convert to matrix
 #####
-#Save row names
-rownames(sp_matrix) <- sp_matrix$SampleID
-sp_matrix <- sp_matrix[, -1]  # remove SampleID column
 
-# Reuse the same SampleID structure
+# Convert to base data frame
+sp_df <- as.data.frame(sp_matrix)
+
+# Set row names from SampleID
+rownames(sp_df) <- sp_df$SampleID
+
+# Remove SampleID column now that it's row names
+sp_df$SampleID <- NULL
+
+# Summarize environmental metadata per SampleID
 env_data <- format1 %>%
-  distinct(SampleID, .keep_all = TRUE) %>%
-  select(SampleID, PolicyPeriod, Immission, T, Precipitation)
+  group_by(SampleID) %>%
+  summarise(
+    PolicyPeriod = first(PolicyPeriod),
+    Immission = mean(Immission, na.rm = TRUE),
+    T = mean(T, na.rm = TRUE),
+    Precipitation = mean(Precipitation, na.rm = TRUE), Wind=mean(Wind,na.rm=TRUE)
+  )
 
-# Ensure matching row order with species matrix
-env_data <- env_data[match(rownames(sp_matrix), env_data$SampleID), ]
-rownames(env_data) <- env_data$SampleID
-env_data <- env_data[, -1]  # remove SampleID column
 #####
 #PERMANOVA
 #####
 # Bray-Curtis dissimilarity
-bray_dist <- vegdist(sp_matrix, method = "bray")
+bray_dist <- vegdist(sp_df, method = "bray")
 
 # PERMANOVA test
-adonis_result <- adonis2(bray_dist ~ PolicyPeriod + Immission + T + Precipitation,
+adonis_result <- adonis2(bray_dist ~ PolicyPeriod*Immission + T + Precipitation + Wind,
                          data = env_data,
                          permutations = 999,
                          method = "bray")
