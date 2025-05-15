@@ -8,8 +8,8 @@ library(tidyr)
 library(readxl)
 
 #Set formating of format1 dataset
-format1 <- read_excel("format1.xlsx")
 #####
+format1 <- read_excel("format1.xlsx")
 format1 <- format1 %>%
   mutate(Date = as.Date(Date))
 
@@ -29,7 +29,7 @@ format1$Date <- as.factor(format1$Date)
 format1$Woody.species <- as.factor(format1$Woody.species)
 
 str(format1$Date)
-
+#####
 #Create a unique sample ID for grouping variable
 format1 <- format1 %>%
   mutate(SampleID = paste(Time.period, Woody.species, sep = "_"))
@@ -56,7 +56,7 @@ sp_df$SampleID <- NULL
 env_data <- format1 %>%
   group_by(SampleID) %>%
   summarise(
-    PolicyPeriod = first(PolicyPeriod),
+    PolicyPeriod = first(PolicyPeriod), Time.period = first(Time.period),
     Woody.species = first(Woody.species),
     Immission = mean(Immission, na.rm = TRUE),
     T = mean(T, na.rm = TRUE),
@@ -81,18 +81,16 @@ print(pairwise.perm.test)
 #A test for homogeneity of multivariate dispersion (PERMDISP) was significant (p = 0.001), indicating slight differences in group dispersion. Visual inspection, however, showed only moderate variation, suggesting group differences in the PERMANOVA are likely driven by both location and spread effects.
 
 # PERMANOVA test
-adonis_result <- adonis2(bray_dist ~ PolicyPeriod*Immission + T + Precipitation + Wind,
-                         data = env_data,
-                         permutations = 999,
-                         method = "bray")
+adonis_result1<-adonis2(bray_dist ~ Immission + PolicyPeriod, data = env_data, permutations = 9999, method = "bray",by="margin",strata=env_data$Woody.species)
+#PolicyPeriod and Immission together explain XXX% of the total variation in community structure.
+adonis_result1<-adonis2(bray_dist ~ Immission + PolicyPeriod + Time.period + T + Precipitation + Wind, data = env_data, permutations = 9999, method = "bray",by="margin",strata=env_data$Woody.species)
+#After accounting for climatic and temporal variation, PolicyPeriod and Immission still significantly explain variation in community composition (R² = ...).
 
-# View result
-print(adonis_result3)
+#Calculation for adjusted R² for vegan::adonis2() 
+adjusted_R2 <- function(R2, n, m) {
+  1 - ((1 - R2) * (n - 1) / (n - m - 1))
+}
 
-adonis_result2<-adonis2(bray_dist ~ PolicyPeriod+Immission, data = env_data, permutations = 50, method = "bray",by="margin",strata=env_data$Woody.species)
-
-adonis_result3<-adonis2(bray_dist ~ PolicyPeriod*Immission, data = env_data, permutations = 50, method = "bray",by="margin",strata=env_data$Woody.species)
-
-adonis_result4<-adonis2(bray_dist ~ PolicyPeriod*Immission, data = env_data, permutations = 50, method = "bray",by="margin",strata=env_data$Woody.species)
+adjusted_R2(R2 = 0.00454, n = 2608, m = 2)
 
 
