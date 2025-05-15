@@ -36,6 +36,7 @@ format1$Date <- as.factor(format1$Date)
 format1$Woody.species <- as.factor(format1$Woody.species)
 
 str(format1$Date)
+str(format1$PolicyPeriod)
 #Model hint
 #####
 #Always check concurvity (mgcv::concurvity()), and plot interactions using vis.gam() or gratia::draw()
