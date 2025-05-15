@@ -81,11 +81,11 @@ print(pairwise.perm.test)
 #A test for homogeneity of multivariate dispersion (PERMDISP) was significant (p = 0.001), indicating slight differences in group dispersion. Visual inspection, however, showed only moderate variation, suggesting group differences in the PERMANOVA are likely driven by both location and spread effects.
 #Although PERMDISP was significant (p = 0.001), visual inspection indicated only moderate variation in dispersion. Therefore, differences in community composition among PolicyPeriods are likely influenced by both location (centroid shifts) and group spread.
 # PERMANOVA test
-adonis_result1<-adonis2(bray_dist ~ Immission + PolicyPeriod, data = env_data, permutations = 9999, method = "bray",by="margin",strata=env_data$Woody.species)
+adonis_result2<-adonis2(bray_dist ~ Immission + PolicyPeriod, data = env_data, permutations = 999, method = "bray",by="margin",strata=env_data$Woody.species)
 #PolicyPeriod and Immission together explain XXX% of the total variation in community structure.
-adonis_result1<-adonis2(bray_dist ~ Immission + PolicyPeriod + Time.period + T + Precipitation + Wind, data = env_data, permutations = 9999, method = "bray",by="margin",strata=env_data$Woody.species)
+adonis_result1<-adonis2(bray_dist ~ Immission + PolicyPeriod + Time.period + T + Precipitation + Wind, data = env_data, permutations = 999, method = "bray",by="margin",strata=env_data$Woody.species)
 #After accounting for climatic and temporal variation, PolicyPeriod and Immission still significantly explain variation in community composition (R² = ...).
-
+print(adonis_result2)
 #Calculation for adjusted R² for vegan::adonis2() 
 adjusted_R2 <- function(R2, n, m) {
   1 - ((1 - R2) * (n - 1) / (n - m - 1))
@@ -93,4 +93,26 @@ adjusted_R2 <- function(R2, n, m) {
 
 adjusted_R2(R2 = 0.00454, n = 2608, m = 2)
 
+Permutation test for adonis under reduced model
+Marginal effects of terms
+Blocks:  strata 
+Permutation: free
+Number of permutations: 999
 
+adonis2(formula = bray_dist ~ Immission + PolicyPeriod + Time.period + T + Precipitation + Wind, data = env_data, permutations = 999, method = "bray", by = "margin", strata = env_data$Woody.species)
+                  Df SumOfSqs R2       F     Pr(>F)    
+Immission        1     1.56 0.00174  4.9285  0.001 ***
+PolicyPeriod     3     8.64 0.00961  9.0841  0.001 ***
+Time.period      1     2.40 0.00267  7.5763  0.001 ***
+T                1    21.18 0.02356 66.7903  0.001 ***
+Precipitation    1     3.92 0.00436 12.3604  0.001 ***
+Wind             1     3.02 0.00336  9.5345  0.001 ***
+Residual      2599   824.00 0.91677                   
+Total         2607   898.82 1.00000
+
+adonis2(formula = bray_dist ~ Immission + PolicyPeriod, data = env_data, permutations = 999, method = "bray", by = "margin", strata = env_data$Woody.species)
+                Df SumOfSqs R2      F       Pr(>F)    
+Immission       1     3.59 0.00400 10.739  0.001 ***
+PolicyPeriod    3    17.36 0.01932 17.301  0.001 ***
+Residual     2603   870.75 0.96877                  
+Total        2607   898.82 1.00000 
