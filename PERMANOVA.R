@@ -8,13 +8,17 @@ library(dplyr)
 library(tidyr)
 library(readxl)
 
+#Birch filtrating
+birch_data <- format1 %>% filter(Woody.species == "Birch")
+
 #Create a unique sample ID for grouping variable
-format1 <- format1 %>%
+birch_data <- birch_data %>%
   mutate(SampleID = paste(Time.period, Locality, Woody.species, sep = "_"))
 
 #Create species matrix: rows = samples, columns = species, values = total abundance
-sp_matrix <- format1 %>% group_by(Woody.species, Species)
-summarise(Abundance = sum(Number)) %>%
+sp_matrix <- birch_data %>%
+  group_by(SampleID, Species) %>%
+  summarise(Abundance = sum(Number), .groups = "drop") %>%
   pivot_wider(names_from = Species, values_from = Abundance, values_fill = 0)
 #####
 #Convert to matrix
@@ -22,6 +26,8 @@ summarise(Abundance = sum(Number)) %>%
 
 # Convert to base data frame
 sp_df <- as.data.frame(sp_matrix)
+rownames(sp_df) <- sp_df$SampleID
+sp_df$SampleID <- NULL
 
 # Set row names from SampleID
 rownames(sp_df) <- sp_df$SampleID
@@ -30,14 +36,17 @@ rownames(sp_df) <- sp_df$SampleID
 sp_df$SampleID <- NULL
 
 # Summarize environmental metadata per SampleID
-env_data <- format1 %>%
+env_data <- birch_data %>%
   group_by(SampleID) %>%
   summarise(
     PolicyPeriod = first(PolicyPeriod),
     Immission = mean(Immission, na.rm = TRUE),
     T = mean(T, na.rm = TRUE),
-    Precipitation = mean(Precipitation, na.rm = TRUE), Wind=mean(Wind,na.rm=TRUE)
+    Precipitation = mean(Precipitation, na.rm = TRUE),
+    Wind = mean(Wind, na.rm = TRUE),
+    .groups = "drop"
   )
+env_data <- as.data.frame(env_data)
 
 #####
 #PERMANOVA
@@ -46,16 +55,11 @@ env_data <- format1 %>%
 bray_dist <- vegdist(sp_df, method = "bray")
 
 # PERMANOVA test
-adonis_result <- adonis2(bray_dist ~ PolicyPeriod*Immission + T + Precipitation + Wind,
+adonis_result <- adonis2(bray_dist ~ PolicyPeriod * Immission + T + Precipitation + Wind,
                          data = env_data,
                          permutations = 999,
-                         method = "bray")
+                         method = "bray",
+                         by = NULL)
 
-# View result
-print(adonis_result3)
-
-adonis_result2<-adonis2(bray_dist ~ PolicyPeriod*Immission, data = env_data, permutations = 1, method = "bray",by=NULL)
-
-adonis_result3<-adonis2(bray_dist ~ PolicyPeriod+Immission, data = env_data, permutations = 1)
-
+print(adonis_result)
 
