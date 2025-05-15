@@ -68,14 +68,14 @@ env_data$Woody.species <- as.factor(env_data$Woody.species)
 #####
 #PERMANOVA
 #####
-# Bray-Curtis dissimilarity
+# Bray-Curtis dissimilarity calculation
 bray_dist <- vegdist(sp_df, method = "bray")
-
+#PERMDISP
 dispersion <- betadisper(bray_dist, env_data$PolicyPeriod)
 permutest(dispersion)
 plot(dispersion)
 boxplot(dispersion)
-#differences in group dispersion exist
+#differences in group dispersion exist?
 pairwise.perm.test <- TukeyHSD(dispersion)
 print(pairwise.perm.test)
 #A test for homogeneity of multivariate dispersion (PERMDISP) was significant (p = 0.001), indicating slight differences in group dispersion. Visual inspection, however, showed only moderate variation, suggesting group differences in the PERMANOVA are likely driven by both location and spread effects.
@@ -87,7 +87,12 @@ adonis_result <- adonis2(bray_dist ~ PolicyPeriod*Immission + T + Precipitation 
                          method = "bray")
 
 # View result
-print(adonis_result2)
+print(adonis_result3)
 
 adonis_result2<-adonis2(bray_dist ~ PolicyPeriod+Immission, data = env_data, permutations = 50, method = "bray",by="margin",strata=env_data$Woody.species)
+
+adonis_result3<-adonis2(bray_dist ~ PolicyPeriod*Immission, data = env_data, permutations = 50, method = "bray",by="margin",strata=env_data$Woody.species)
+
+adonis_result4<-adonis2(bray_dist ~ PolicyPeriod*Immission, data = env_data, permutations = 50, method = "bray",by="margin",strata=env_data$Woody.species)
+
 
