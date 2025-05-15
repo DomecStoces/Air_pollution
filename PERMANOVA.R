@@ -55,11 +55,10 @@ env_data <- as.data.frame(env_data)
 bray_dist <- vegdist(sp_df, method = "bray")
 
 # PERMANOVA test
-adonis_result <- adonis2(bray_dist ~ PolicyPeriod * Immission + T + Precipitation + Wind,
+adonis_result <- adonis2(bray_dist ~ PolicyPeriod+Immission,
                          data = env_data,
-                         permutations = 999,
-                         method = "bray",
-                         by = NULL)
+                         permutations = 1,
+                         by = "margin")
 
 print(adonis_result)
 
