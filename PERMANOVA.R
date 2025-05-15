@@ -82,7 +82,7 @@ print(pairwise.perm.test)
 #Although PERMDISP was significant (p = 0.001), visual inspection indicated only moderate variation in dispersion. Therefore, differences in community composition among PolicyPeriods are likely influenced by both location (centroid shifts) and group spread.
 # PERMANOVA test
 adonis_result2<-adonis2(bray_dist ~ Immission + PolicyPeriod, data = env_data, permutations = 999, method = "bray",by="margin",strata=env_data$Woody.species)
-#PolicyPeriod and Immission together explain XXX% of the total variation in community structure.
+#PolicyPeriod and Immission together explain 2.33% of the total variation in community structure.
 adonis_result1<-adonis2(bray_dist ~ Immission + PolicyPeriod + Time.period + T + Precipitation + Wind, data = env_data, permutations = 999, method = "bray",by="margin",strata=env_data$Woody.species)
 #After accounting for climatic and temporal variation, PolicyPeriod and Immission still significantly explain variation in community composition (R² = ...).
 print(adonis_result2)
