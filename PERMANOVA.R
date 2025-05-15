@@ -19,9 +19,6 @@ format1 <- format1 %>%
     )
   )
 
-format1$PolicyPeriod <- as.factor(format1$PolicyPeriod)
-format1$Date <- as.factor(format1$Date)
-format1$Woody.species <- as.factor(format1$Woody.species)
 #Create a unique sample ID for grouping variable
 format1 <- format1 %>%
   mutate(SampleID = paste(Time.period, Locality, Woody.species, sep = "_"))
