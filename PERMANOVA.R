@@ -52,3 +52,5 @@ adonis_result <- adonis2(bray_dist ~ PolicyPeriod*Immission + T + Precipitation 
 
 # View result
 print(adonis_result)
+
+adonis2(bray_dist ~ PolicyPeriod * Immission, data = env_data, permutations = 999, method = "bray")
