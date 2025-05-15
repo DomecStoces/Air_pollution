@@ -12,7 +12,7 @@ library(dplyr)
 library(patchwork)
 library(segmented)
 library(broom)
-
+library(readxl)
 #Set formating of format1 dataset
 format1 <- read_excel("format1.xlsx")
 #####
