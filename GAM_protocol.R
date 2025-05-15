@@ -13,11 +13,13 @@ library(patchwork)
 library(segmented)
 library(broom)
 library(readxl)
+library(tidyr)
 #Set formating of format1 dataset
 format1 <- read_excel("format1.xlsx")
 #####
 format1 <- format1 %>%
   mutate(Date = as.Date(Date))
+
 format1 <- format1 %>%
   mutate(
     PolicyPeriod = case_when(
@@ -25,7 +27,8 @@ format1 <- format1 %>%
       Date >= as.Date("1991-10-04") & Date < as.Date("2002-06-01") ~ "1991_2002",
       Date >= as.Date("2002-06-01") & Date < as.Date("2012-09-01") ~ "2002_2012",
       Date >= as.Date("2012-09-01") ~ "Post2012"
-    )
+    ),
+    PolicyPeriod = factor(PolicyPeriod)
   )
 
 format1$PolicyPeriod <- as.factor(format1$PolicyPeriod)
