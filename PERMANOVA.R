@@ -79,7 +79,7 @@ boxplot(dispersion)
 pairwise.perm.test <- TukeyHSD(dispersion)
 print(pairwise.perm.test)
 #A test for homogeneity of multivariate dispersion (PERMDISP) was significant (p = 0.001), indicating slight differences in group dispersion. Visual inspection, however, showed only moderate variation, suggesting group differences in the PERMANOVA are likely driven by both location and spread effects.
-
+#Although PERMDISP was significant (p = 0.001), visual inspection indicated only moderate variation in dispersion. Therefore, differences in community composition among PolicyPeriods are likely influenced by both location (centroid shifts) and group spread.
 # PERMANOVA test
 adonis_result1<-adonis2(bray_dist ~ Immission + PolicyPeriod, data = env_data, permutations = 9999, method = "bray",by="margin",strata=env_data$Woody.species)
 #PolicyPeriod and Immission together explain XXX% of the total variation in community structure.
